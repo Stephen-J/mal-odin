@@ -1,2 +1,2 @@
 #!/bin/bash
-exec odin run $(dirname $0)/src/${STEP:-stepA_mal}.odin "${@}" -file 
+exec odin run $(dirname $0)/steps/${STEP:-stepA_mal} "${@}" 
