@@ -113,7 +113,7 @@ read_atom_test :: proc(t : ^testing.T) {
 
   tokens = []string{":keyword"}
   reader_init(&reader,tokens)
-  form = read_form(&reader)
+  form = read_atom(&reader)
   if keyword,ok := form.(Keyword); !ok || keyword.name != "keyword"  do testing.fail(t)
 }
 
