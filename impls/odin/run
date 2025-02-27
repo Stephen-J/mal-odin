@@ -1,3 +1,6 @@
 #!/bin/bash
 
-exec odin run ./${STEP:-stepA_mal} 
+if [ ! -d build ]; then
+  mkdir build
+fi
+exec odin run ./steps/${STEP:-stepA_mal} -out:./build/${STEP:-stepA_mal}
