@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec odin run ./${STEP:-stepA_mal} 
