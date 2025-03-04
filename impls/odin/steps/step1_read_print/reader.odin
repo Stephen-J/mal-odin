@@ -228,17 +228,17 @@ read_atom :: proc(token_reader : ^Reader) -> MalType {
         type = Keyword{name = utf8.runes_to_string(token.runes[1:])}
         reader_consume(token_reader)
       // False
-      case '\u0046' :
-        type = False{}
-        reader_consume(token_reader)
+      //case '\u0046' :
+      //  type = False{}
+      //  reader_consume(token_reader)
       // nil 
-      case '\u004E' :
-        type = Nil{}
-        reader_consume(token_reader)
+      //case '\u004E' :
+      //  type = Nil{}
+      //  reader_consume(token_reader)
       // true
-      case '\u0074' :
-        type = True{}
-        reader_consume(token_reader)
+      //case '\u0074' :
+      //  type = True{}
+      //  reader_consume(token_reader)
       // numbers with a  -
       case '\u002D' :
         if len(token.runes) > 1 {
@@ -253,7 +253,19 @@ read_atom :: proc(token_reader : ^Reader) -> MalType {
         }
         fallthrough
       case :
-        type = Symbol{name = utf8.runes_to_string(token.runes[:])}
+        s := utf8.runes_to_string(token.runes[:])
+        if s == "true" {
+          delete(s)
+          type = True{}
+        } else if s == "false" {
+          delete(s)
+          type = False{}
+        } else if s == "nil" {
+          delete(s)
+          type = Nil{}
+        } else {
+          type = Symbol{name = s}
+        }
         reader_consume(token_reader)
     }
     
