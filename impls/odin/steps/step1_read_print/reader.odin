@@ -187,7 +187,10 @@ read_list :: proc(token_reader : ^Reader) -> (valid_list : List,err : Error) {
   }
   if closing_found {
     return list,nil
-  } else do return list,Token_Not_Matched{started = '(',missing = ')'} 
+  } else { 
+    type_destroy(list)
+    return list,Token_Not_Matched{started = '(',missing = ')'}
+  }
 }
 
 read_vector :: proc(token_reader : ^Reader) -> (valid_vector : Vector,err : Error) {
@@ -203,12 +206,14 @@ read_vector :: proc(token_reader : ^Reader) -> (valid_vector : Vector,err : Erro
     } else {
       form := read_form(token_reader) or_return 
       append(&vector.items,form)
-    }
-   
+    } 
   }
   if closing_found {
     return vector,nil
-  } else do return vector,Token_Not_Matched{started = '[',missing = ']'} 
+  } else {
+    type_destroy(vector)
+    return vector,Token_Not_Matched{started = '[',missing = ']'}
+  }
 }
 
 read_atom :: proc(token_reader : ^Reader) -> MalType {
@@ -227,18 +232,6 @@ read_atom :: proc(token_reader : ^Reader) -> MalType {
       case '\u003A' :
         type = Keyword{name = utf8.runes_to_string(token.runes[1:])}
         reader_consume(token_reader)
-      // False
-      //case '\u0046' :
-      //  type = False{}
-      //  reader_consume(token_reader)
-      // nil 
-      //case '\u004E' :
-      //  type = Nil{}
-      //  reader_consume(token_reader)
-      // true
-      //case '\u0074' :
-      //  type = True{}
-      //  reader_consume(token_reader)
       // numbers with a  -
       case '\u002D' :
         if len(token.runes) > 1 {
@@ -293,6 +286,7 @@ read_map :: proc(token_reader : ^Reader) -> (valid_map : Map,err : Error) {
   if closing_found {
     return form,nil
   } else {
+    type_destroy(form)
     return form,Token_Not_Matched{started = '{',missing = '}'}
   }
 }
@@ -385,7 +379,6 @@ unescape_runes :: proc(runes : []rune) -> ([dynamic]rune,Error) {
   }
   if quote_count == 2 do return unescaped,nil
     else do return nil,Token_Not_Matched{started = '"',missing = '"'} 
-  return unescaped,nil
 }
 
 escape_runes :: proc(runes : []rune) -> [dynamic]rune {
@@ -452,8 +445,12 @@ read_string :: proc(src : string) -> (valid_forms : [dynamic]MalType,err : Error
   reader_init(&token_reader)
   tokenize(string_stream,&token_reader)
   for reader_has_next(&token_reader) {
-    form := read_form(&token_reader) or_return
-    append(&forms,form)
+    form,err := read_form(&token_reader)
+    if err != nil {
+      for form in forms do type_destroy(form)
+      delete(forms)
+      return [dynamic]MalType{},err
+    }else do append(&forms,form)
   }
   return forms,nil
 }

@@ -12,7 +12,7 @@ read :: proc(src : string) -> ([dynamic]MalType,Error){
 }
 
 eval :: proc(forms : [dynamic]MalType,err : Error) -> ([dynamic]MalType,Error){
-  if err != nil do return nil,err
+  if err != nil do return forms,err
   return forms,nil
 }
 
